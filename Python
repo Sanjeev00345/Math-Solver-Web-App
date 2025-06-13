@@ -1,0 +1,19 @@
+from flask import Flask, request, render_template
+from sympy import sympify, SympifyError
+
+app = Flask(__name__)
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    result = ''
+    expression = ''
+    if request.method == 'POST':
+        expression = request.form['expression']
+        try:
+            result = sympify(expression)
+        except SympifyError:
+            result = 'Invalid expression'
+    return render_template('index.html', result=result, expression=expression)
+
+if __name__ == '__main__':
+    app.run(debug=True)
