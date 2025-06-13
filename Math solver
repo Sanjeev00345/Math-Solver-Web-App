@@ -1,0 +1,28 @@
+from flask import Flask, request, render_template_string
+import openai, os
+from dotenv import load_dotenv
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+app = Flask(__name__)
+TEMPLATE = '''
+<form method="POST"><input name="q"><button>Ask</button></form>
+{% if ans %}<p>Answer: {{ans}}</p>{% endif %}
+'''
+
+@app.route('/', methods=['GET','POST'])
+def home():
+    ans = None
+    if request.method=='POST':
+        q = request.form['q']
+        resp = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role":"user","content":f"Solve step-by-step: {q}"}],
+            max_tokens=500
+        )
+        ans = resp.choices[0].message.content
+    return render_template_string(TEMPLATE, ans=ans)
+
+if __name__=='__main__':
+    app.run(port=5000, debug=True)
